@@ -49,6 +49,13 @@ elif req == "devalize":
         cursor.execute(query)
         conn.commit()
     conn.close()
+elif req == "mylist":
+    conn = sqlite3.connect("data.db")
+    cursor = conn.cursor()
+    flist = "AVALIZED FILES:"
+    for row in cursor.execute("SELECT * FROM filelist"):
+        flist += "\n" + str(row[0]) + " - " + str(row[1])
+    print flist
 elif req == "sendfile" or "getfile" or "getlist":
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = (sys.argv[2], 10006)
