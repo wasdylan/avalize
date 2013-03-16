@@ -4,7 +4,7 @@ Warning: extremely new, still under development, and by no means secure.
 
 INSTALLATION:
 1. Download source and make sure you Python is behaving.
-2. Get EasyGui. (Debianers like me: sudo apt-get easygui).
+2. Get EasyGui. (Debianers like me: sudo apt-get python-easygui).
 3. Configure Avalize database (python ./db-config.py).
 4. Run the server (python ./listen.py).
 5. Run the talker to do shit.
