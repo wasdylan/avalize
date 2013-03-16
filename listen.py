@@ -61,7 +61,7 @@ def senddata(string):
         print "abort."
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_address = (get_lan_ip(), 10000)
+server_address = (get_lan_ip(), 10006)
 print >>sys.stderr, 'starting up on %s port %s' % server_address
 sock.bind(server_address)
 sock.listen(10)
@@ -71,7 +71,7 @@ while True:
     connection, client_address = sock.accept()
 
     try:
-        print >>sys.stderr, 'verifying connection from', client_address
+        print >>sys.stderr, 'verifying connection from', connection.getpeername()
         # verify connection
         
         data = connection.recv(250)
@@ -85,15 +85,23 @@ while True:
         elif data.startswith("gf*"):
             parts = data.split("*", 1)
             fil = parts[1]
-            # query data.db to find full path of file.
-            elephant = open(fil)
-            content = file.read(elephant)
-            senddata(content)
+            conn = sqlite3.connect("data.db")
+            cursor = conn.cursor()
+            if fil.isdigit() == True:
+                query = "SELECT * FROM filelist WHERE id='%s' LIMIT 1" % fil
+            else:
+                query = "SELECT * FROM filelist WHERE filepath LIKE '%"+fil+"%' LIMIT 1"
+            for row in cursor.execute(query):
+                if row[1] == "":
+                    print "no file, abort"
+                else:
+                    elephant = open(row[1])
+                    content = file.read(elephant)
+                    senddata(content)
         elif data.startswith("sf*"):
             parts = data.split("*", 1)
             path, fil = os.path.split(parts[1])
-            print client_address, " wants to send", fil, "to you."
-            if eg.ynbox("someone wants to send " + fil + " to you.", "transmission request"):
+            if eg.ynbox(server_address[0] + " wants to send " + fil + " to you.", "transmission request"):
                 lfil = eg.filesavebox(msg=None, title=None, default=fil, filetypes=None)
                 if lfil == "None":
                     print "abort."

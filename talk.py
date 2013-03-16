@@ -2,6 +2,7 @@ import socket
 import sys
 import sqlite3
 import os
+import easygui as eg
 
 def receivedata():
     length = sock.recv(16)
@@ -36,20 +37,34 @@ if req == "avalize":
     conn.commit()
     conn.close()
 elif req == "devalize":
-    print "haha"
+    fil = sys.argv[2]
+    conn = sqlite3.connect("data.db")
+    cursor = conn.cursor()
+    if fil.isdigit() == True:
+        query = "DELETE FROM filelist WHERE id='%s'" % fil
+        cursor.execute(query)
+        conn.commit()
+    else:
+        query = "DELETE FROM filelist WHERE filepath LIKE '%"+fil+"%'"
+        cursor.execute(query)
+        conn.commit()
+    conn.close()
 elif req == "sendfile" or "getfile" or "getlist":
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_address = (sys.argv[2], 10001)
-    print >>sys.stderr, 'connecting to %s port %s' % server_address
+    server_address = (sys.argv[2], 10006)
     sock.connect(server_address)
     try:
         if req == "getfile":
             rfil = sys.argv[3]
-            sock.sendall("gf*" + rfil)
-            data = receivedata()
-            lf = open("Fade.mp3", 'wb')
-            lf.write(data)
-            lf.close()
+            lfil = eg.filesavebox(msg=None, title=None, default=rfil, filetypes=None)
+            if lfil == "None":
+                print "abort."
+            else:
+                sock.sendall("gf*" + rfil)
+                data = receivedata()
+                lf = open(lfil, 'wb')
+                lf.write(data)
+                lf.close()
         elif req == "getlist":
             sock.sendall("gl")
             data = receivedata()
@@ -65,6 +80,6 @@ elif req == "sendfile" or "getfile" or "getlist":
                 content = file.read(elephant)
                 senddata(content)
             else:
-                sys.stdout.write("peer rejected transmission, aborting.\n") 
+                print "peer rejected transmission, aborting."
     finally:
         sock.close()
