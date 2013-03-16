@@ -45,20 +45,16 @@ def receivedata():
         buff += connection.recv( length - len(buff) )
     return buff
 
-def senddata(string):
-    print "establishing terms..."	
+def senddata(string):	
     # send size of transmission
     length = len(string)
     connection.sendall(str(length))
     # wait for their go
     data = connection.recv(16)
-    print "established."
     if data == "go":
-        print "sending data..."
         connection.sendall(string)
-        print "sent."
     else:
-        print "abort."
+        print "aborting."
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = (get_lan_ip(), 10006)
@@ -71,17 +67,19 @@ while True:
     connection, client_address = sock.accept()
 
     try:
-        print >>sys.stderr, 'verifying connection from', connection.getpeername()
+        print >>sys.stderr, 'connection from', server_address[0]
         # verify connection
         
         data = connection.recv(250)
         if data == "gl":
+            print server_address[0], "wants your avalized list, sending..."
             conn = sqlite3.connect("data.db")
             cursor = conn.cursor()
-            flist = "AVALIZED FILES:"
+            flist = get_lan_ip() + "'S AVALIZED FILES:"
             for row in cursor.execute("SELECT * FROM filelist"):
                 flist += "\n" + str(row[0]) + " - " + str(row[1])
             senddata(flist)
+            print "sent."
         elif data.startswith("gf*"):
             parts = data.split("*", 1)
             fil = parts[1]
@@ -92,31 +90,37 @@ while True:
             else:
                 query = "SELECT * FROM filelist WHERE filepath LIKE '%"+fil+"%' LIMIT 1"
             for row in cursor.execute(query):
-                if row[1] == "":
-                    print "no file, abort"
+                if row[0] == "":
+                    print server_address[0], "wants", fil, "but it is not avalized, aborting."
+                    connection.sendall("n")
                 else:
-                    elephant = open(row[1])
-                    content = file.read(elephant)
-                    senddata(content)
+                    print server_address[0], "wants", fil + ", sending..."
+                    connection.sendall("y")
+                    go = connection.recv(16)
+                    if go == "go":
+                        elephant = open(row[1])
+                        content = file.read(elephant)
+                        senddata(content)
+                        print "sent."
         elif data.startswith("sf*"):
             parts = data.split("*", 1)
             path, fil = os.path.split(parts[1])
             if eg.ynbox(server_address[0] + " wants to send " + fil + " to you.", "transmission request"):
                 lfil = eg.filesavebox(msg=None, title=None, default=fil, filetypes=None)
                 if lfil == "None":
-                    print "abort."
+                    print "aborting."
                 else:
+                    print "beginning transmission..."
                     connection.sendall("y")
                     data = receivedata()
-                    print "transmission completed."
                     lf = open(lfil, 'wb')
                     lf.write(data)
                     lf.close()
+                    print "transmission completed,", fil, "received."
             else: 
                 connection.sendall("n")
-                print "abort"
+                print "aborting."
         else:
-            print 'no more data from', client_address
             break
             
     finally:

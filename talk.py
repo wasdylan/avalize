@@ -52,7 +52,7 @@ elif req == "devalize":
 elif req == "mylist":
     conn = sqlite3.connect("data.db")
     cursor = conn.cursor()
-    flist = "AVALIZED FILES:"
+    flist = "MY AVALIZED FILES:"
     for row in cursor.execute("SELECT * FROM filelist"):
         flist += "\n" + str(row[0]) + " - " + str(row[1])
     print flist
@@ -63,15 +63,21 @@ elif req == "sendfile" or "getfile" or "getlist":
     try:
         if req == "getfile":
             rfil = sys.argv[3]
-            lfil = eg.filesavebox(msg=None, title=None, default=rfil, filetypes=None)
-            if lfil == "None":
-                print "abort."
-            else:
-                sock.sendall("gf*" + rfil)
+            sock.sendall("gf*" + rfil)
+            ismatch = sock.recv(16)
+            if ismatch == "y":
+                sock.sendall("go")
+                print "receiving file."
                 data = receivedata()
-                lf = open(lfil, 'wb')
-                lf.write(data)
-                lf.close()
+                lfil = eg.filesavebox(msg=None, title=None, default=rfil, filetypes=None)
+                if lfil == "None":
+                    print "aborting."
+                else:
+                    lf = open(lfil, 'wb')
+                    lf.write(data)
+                    lf.close()
+            elif ismatch == "n":
+                print "the file you requested is not publically available. check for typos and try again."
         elif req == "getlist":
             sock.sendall("gl")
             data = receivedata()
