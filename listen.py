@@ -58,7 +58,7 @@ def senddata(string):
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = (get_lan_ip(), 10006)
-print >>sys.stderr, 'starting up on %s port %s' % server_address
+print >>sys.stderr, 'starting up on %s... (ctrl+c to quit)' % server_address[0]
 sock.bind(server_address)
 sock.listen(10)
 
@@ -66,10 +66,7 @@ while True:
     print >>sys.stderr, 'waiting for a connection'
     connection, client_address = sock.accept()
 
-    try:
-        print >>sys.stderr, 'connection from', server_address[0]
-        # verify connection
-        
+    try: 
         data = connection.recv(250)
         if data == "gl":
             print server_address[0], "wants your avalized list, sending..."
