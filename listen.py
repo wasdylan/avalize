@@ -73,7 +73,7 @@ while True:
         data = connection.recv(250)
         if data == "gl":
             print server_address[0], "wants your avalized list, sending..."
-            conn = sqlite3.connect("data.db")
+            conn = sqlite3.connect(datadir+"/data.db")
             cursor = conn.cursor()
             flist = get_lan_ip() + "'S AVALIZED FILES:"
             for row in cursor.execute("SELECT * FROM filelist"):
@@ -83,7 +83,7 @@ while True:
         elif data.startswith("gf*"):
             parts = data.split("*", 1)
             fil = parts[1]
-            conn = sqlite3.connect("data.db")
+            conn = sqlite3.connect(datadir+"/data.db")
             cursor = conn.cursor()
             if fil.isdigit() == True:
                 query = "SELECT * FROM filelist WHERE id='%s' LIMIT 1" % fil

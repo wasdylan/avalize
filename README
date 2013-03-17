@@ -3,7 +3,7 @@ Avalize is file sharing made simple. Warning: extremely new, still under develop
 INSTALLATION:
 1. Download Avalize source and make sure your Python isn't a problematic bitch.
 2. Get EasyGui. (Debianers like me: sudo apt-get python-easygui).
-3. Configure Avalize database (python ./db-config.py).
+3. Configure Avalize database (python ./talk.py config).
 4. Run the server (python ./listen.py).
 5. Run the talker to do shit.
 
@@ -21,7 +21,7 @@ Un-availabalize a file: python ./talk.py devalize [id, partial-full path or file
 
 See your current public list: python ./talk.py mylist
 
-Get a list of another's public files: python ./talk.py getlist [target ip]
+See  another's list: python ./talk.py getlist [target ip]
 
 Get a file from another's list: python ./talk.py getfile [target ip] [id, partial-full path or filename to get from their list]
 
@@ -30,11 +30,5 @@ Send a file to a specific host without avalizing it (manual transmission): pytho
 
 
 FORTHCOMING:
-
-Ability to make list available only to trusted hosts on network.
-
-Encrypt data transmissions.
-
-Get lists from all trusted hosts at once.
 
 Debianize, installable by humans.

@@ -6,6 +6,11 @@ import easygui as eg
 from subprocess import Popen
 from multiprocessing import Process
 
+datadir = os.path.expanduser(os.path.join('~', '.avalize'))
+if not os.path.exists(datadir):
+    os.makedirs(datadir)
+    assert os.path.exists(datadir)
+
 def receivedata():
     length = sock.recv(16)
     length = int(length)
@@ -30,14 +35,14 @@ req = sys.argv[1]
 if req == "avalize":
     fil = sys.argv[2]
     abspath = os.path.abspath(fil)
-    conn = sqlite3.connect("data.db")
+    conn = sqlite3.connect(datadir+"/data.db")
     cursor = conn.cursor()
     cursor.execute("INSERT INTO filelist (filepath) VALUES ('" + abspath + "')")
     conn.commit()
     conn.close()
 elif req == "devalize":
     fil = sys.argv[2]
-    conn = sqlite3.connect("data.db")
+    conn = sqlite3.connect(datadir+"/data.db")
     cursor = conn.cursor()
     if fil.isdigit() == True:
         query = "DELETE FROM filelist WHERE id='%s'" % fil
@@ -49,7 +54,7 @@ elif req == "devalize":
         conn.commit()
     conn.close()
 elif req == "mylist":
-    conn = sqlite3.connect("data.db")
+    conn = sqlite3.connect(datadir+"/data.db")
     cursor = conn.cursor()
     flist = "MY AVALIZED FILES:"
     for row in cursor.execute("SELECT * FROM filelist"):
@@ -59,6 +64,16 @@ elif req == "mylist":
 #    p = Popen(['python', './listen.py'])
 # elif req == "stop":
 #    p.terminate()
+elif req == "config":
+    
+    conn = sqlite3.connect(datadir+"/data.db")
+    cursor = conn.cursor()
+    cursor.execute("""CREATE TABLE filelist (
+                  id INTEGER PRIMARY KEY,
+                  filepath text
+                  ) 
+               """)
+    conn.close()
 elif req == "sendfile" or "getfile" or "getlist":
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = (sys.argv[2], 10006)
