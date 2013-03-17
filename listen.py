@@ -94,7 +94,7 @@ while True:
                     print server_address[0], "wants", fil, "but it is not avalized, aborting."
                     connection.sendall("n")
                 else:
-                    print server_address[0], "wants", fil + ", sending..."
+                    print server_address[0], "wants", row[1] + ", sending..."
                     connection.sendall("y")
                     go = connection.recv(16)
                     if go == "go":

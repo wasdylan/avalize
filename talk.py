@@ -3,6 +3,8 @@ import sys
 import sqlite3
 import os
 import easygui as eg
+from subprocess import Popen
+from multiprocessing import Process
 
 def receivedata():
     length = sock.recv(16)
@@ -14,13 +16,10 @@ def receivedata():
     return buff
 
 def senddata(string):
-    print "establishing terms..."
     length = len(string)
     sock.sendall(str(length))
     data = sock.recv(16)
-    print "established."
     if data == "go":
-        print "sending data..."
         sock.sendall(string)
         print "sent."
     else:
@@ -56,6 +55,10 @@ elif req == "mylist":
     for row in cursor.execute("SELECT * FROM filelist"):
         flist += "\n" + str(row[0]) + " - " + str(row[1])
     print flist
+# elif req == "start":
+#    p = Popen(['python', './listen.py'])
+# elif req == "stop":
+#    p.terminate()
 elif req == "sendfile" or "getfile" or "getlist":
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = (sys.argv[2], 10006)
@@ -67,7 +70,7 @@ elif req == "sendfile" or "getfile" or "getlist":
             ismatch = sock.recv(16)
             if ismatch == "y":
                 sock.sendall("go")
-                print "receiving file."
+                print "receiving file..."
                 data = receivedata()
                 lfil = eg.filesavebox(msg=None, title=None, default=rfil, filetypes=None)
                 if lfil == "None":
@@ -76,6 +79,7 @@ elif req == "sendfile" or "getfile" or "getlist":
                     lf = open(lfil, 'wb')
                     lf.write(data)
                     lf.close()
+                    print "received. saved to " + lfil
             elif ismatch == "n":
                 print "the file you requested is not publically available. check for typos and try again."
         elif req == "getlist":
@@ -89,6 +93,7 @@ elif req == "sendfile" or "getfile" or "getlist":
             confirmation = sock.recv(16)
             if confirmation == "y":
                 print "peer accepted transmission."
+                print "sending file..."
                 elephant = open(fil)
                 content = file.read(elephant)
                 senddata(content)
